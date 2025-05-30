@@ -62,7 +62,7 @@ struct CompareEstimateTotalCost{
 void solve(){
 
     // ifstream file_Nodes("/Users/chichenghongye/Downloads/Control/EIT_Master/DD2410 Introduction to Robotics/Modern Robotics/Code/Class4_Unit1_AStarProject/AStarAlgorithmFile/nodes.csv");
-    ifstream file_Nodes("C:/Users/xysss/Desktop/AStar/AStarAlgorithm/nodes.csv");
+    ifstream file_Nodes("/Users/chichenghongye/Downloads/Control/EIT_Master/DD2410 Introduction to Robotics/Modern Robotics/Code/Class4_Unit1_AStarProject/AStarProject/results/nodes.csv");
     string line_Nodes;
     int idx_Nodes = 0;
     
@@ -91,7 +91,7 @@ void solve(){
 
     
     // begin Edges.csv
-    ifstream file_Edges("C:/Users/xysss/Desktop/AStar/AStarAlgorithm/edges.csv");
+    ifstream file_Edges("/Users/chichenghongye/Downloads/Control/EIT_Master/DD2410 Introduction to Robotics/Modern Robotics/Code/Class4_Unit1_AStarProject/AStarProject/results/edges.csv");
 
     string line_Edges;
 

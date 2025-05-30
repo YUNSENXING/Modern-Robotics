@@ -30,6 +30,9 @@ typedef pair<int,string> PIS;
 typedef pair<ll,int> PLI;
 const int N = 2e3+10;
 
+
+constexpr float EPS = 0.009f;
+
 struct Obstacles{
     float x, y, r;
 }Ob[N];
@@ -37,6 +40,7 @@ struct Obstacles{
 struct Node{
     int ID;
     float x, y;
+    float Hvalue;
 }L[N];
 
 struct ListEdge{
@@ -63,12 +67,16 @@ float Gen_Random_Number(float Min_Number, float Max_Number){
 
 
 bool check_valid(float x, float y, float cx, float cy, float cr){
-    if(sqrt(pow(x - cx,2) + pow(y - cy, 2)) > cr){
+    if(pow(x - cx,2) + pow(y - cy, 2) > pow(cr,2) + EPS){
         return true;
     }else{
         return false;
     }
 }
+
+
+string line_Obstacles;
+int idx_Obstacles = 0;
 
 bool check_collision(float x1, float y1, float x2, float y2, float cx, float cy, float cr){
     float dx = x2 - x1;
@@ -85,21 +93,23 @@ bool check_collision(float x1, float y1, float x2, float y2, float cx, float cy,
     if(t >= 0 && t <= 1){
         float cx_x1 = x1 + t * dx;
         float cy_y1 = y1 + t * dy;
-        if(!check_valid(cx_x1,cy_y1,cx,cy,cr)){
+
+        if(!check_valid(cx_x1, cy_y1, cx, cy, cr)){
             return true;
         }
     }
 
     return false;
+    
 }
 
 
 void solve(){
 
-    ifstream file_Obstacles("/Users/chichenghongye/Downloads/Control/EIT_Master/DD2410 Introduction to Robotics/Modern Robotics/Code/Class4_Unit2_Sampling-Based_Planning_Project/planning_coursera/obstacles.csv");
+    ifstream file_Obstacles("/Users/chichenghongye/Downloads/Control/EIT_Master/DD2410 Introduction to Robotics/Modern Robotics/Code/Class4_Unit2_Sampling-Based_Planning_Project/Code/obstacles.csv");
 
-    string line_Obstacles;
-    int idx_Obstacles = 0;
+    // string line_Obstacles;
+    // int idx_Obstacles = 0;
     
 
     while(getline(file_Obstacles,line_Obstacles)){
@@ -126,7 +136,7 @@ void solve(){
     // 随机选点
     // add the start information
 
-    Node Start_Node = {1, -0.5, -0.5};
+    Node Start_Node = {1, -0.5, -0.5, float(sqrt(pow(-0.5-0.5, 2) + pow(-0.5-0.5, 2))  )};
     L[1] = Start_Node;
     int idx_Node = 2;
 
@@ -150,7 +160,8 @@ void solve(){
 
         if(is_success){
             is_find_goal = true;
-            L[idx_Node] = {idx_Node, 0.5, 0.5};
+            L[idx_Node] = {idx_Node, 0.5, 0.5, 0};
+            Open.push({idx_Node, 0.5, 0.5});
             idx_Node ++;
         }else{
             bool is_valid = true;
@@ -158,14 +169,16 @@ void solve(){
             float randomY = Gen_Random_Number(-0.5, 0.5);
 
             for(int i = 0 ; i < idx_Obstacles ; i ++){
-                if(!check_valid(randomX, randomY, Ob[i].x, Ob[i].y, Ob[i].r)){
+                if(!check_valid(randomX, randomY, Ob[i].x, Ob[i].y, Ob[i].r) || check_collision(Current_Node.x, Current_Node.y, randomX, randomY, Ob[i].x, Ob[i].y, Ob[i].r)){
                     is_valid = false;
                 }
             }
 
+
+
             if(is_valid){
-                Open.push({idx_Node, randomX, randomY});
-                L[idx_Node] = {idx_Node, randomX, randomY};
+                Open.push({idx_Node, randomX, randomY, float(sqrt(pow(randomX - 0.5, 2) + pow(randomY - 0.5, 2) ))});
+                L[idx_Node] = {idx_Node, randomX, randomY, float(sqrt(pow(randomX - 0.5, 2) + pow(randomY - 0.5, 2) ) )};
                 idx_Node ++;
             }
         }
@@ -202,9 +215,9 @@ void solve(){
 
 
 
-    std::ofstream node_file("node.csv"); 
-    for(int i = 0 ; i < idx_Node ; i ++){
-        node_file << L[i].ID << ',' << L[i].x << ',' << L[i].y << '\n';
+    std::ofstream node_file("nodes.csv"); 
+    for(int i = 1 ; i < idx_Node ; i ++){
+        node_file << L[i].ID << ',' << L[i].x << ',' << L[i].y << ',' << L[i].Hvalue << '\n';
     }
 
     std::ofstream edges_file("edges.csv"); 
@@ -216,7 +229,7 @@ void solve(){
     std::ofstream path_file("path.csv"); 
     for(int i = 0 ; i < Path.size() ; i ++){
         path_file << Path[i].ID;
-        if(i + 1 != idx_Path){
+        if(i + 1 != Path.size()){
             path_file << ',';
         }
     }
